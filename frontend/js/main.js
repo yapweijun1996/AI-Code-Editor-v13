@@ -293,9 +293,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const mode = selectedOption.value;
         const modeName = selectedOption.text;
 
+        const defaultRules = {
+            code: `
+- Always write clean, modular, and well-documented code.
+- Follow the existing coding style and conventions of the project.
+- When modifying a file, first read it carefully to understand the context.
+- Provide clear explanations for any code changes you make.
+- When you create a file, make sure it is placed in the correct directory.
+            `.trim(),
+            plan: `
+- Always start by creating a clear, step-by-step research plan.
+- Cite all sources and provide links in a 'References' section.
+- Synthesize information from multiple sources to provide a comprehensive answer.
+- Present findings in a structured format, using headings, lists, and Mermaid diagrams where appropriate.
+- Distinguish between facts from sources and your own analysis.
+            `.trim(),
+        };
+
         customRulesModeName.textContent = modeName;
-        const savedRules = await DbManager.getCustomRule(mode);
-        customRulesTextarea.value = savedRules || '';
+        let rules = await DbManager.getCustomRule(mode);
+        if (rules === null) {
+            rules = defaultRules[mode] || '';
+        }
+        customRulesTextarea.value = rules;
         customRulesModal.style.display = 'block';
     });
 
