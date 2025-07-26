@@ -50,7 +50,8 @@ async function executeTool(toolCall, rootDirectoryHandle) {
             if (content.length > MAX_LENGTH) {
                 content = content.substring(0, MAX_LENGTH) + `\n\n... (file content truncated because it was too long)`;
             }
-            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'));
+            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'), false);
+            document.getElementById('chat-input').focus();
             return { content: content };
         }
         case 'read_url': {
@@ -75,7 +76,8 @@ async function executeTool(toolCall, rootDirectoryHandle) {
                 const fileHandle = FileSystem.getFileHandleFromPath(rootDirectoryHandle, filePath);
                 Editor.openFile(fileHandle, filePath, document.getElementById('tab-bar'));
             });
-            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'));
+            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'), false);
+            document.getElementById('chat-input').focus();
             return { message: `File '${parameters.filename}' created successfully.` };
         }
         case 'delete_file': {
@@ -114,7 +116,8 @@ async function executeTool(toolCall, rootDirectoryHandle) {
             if (Editor.getOpenFiles().has(parameters.old_path)) {
                 Editor.closeTab(parameters.old_path, document.getElementById('tab-bar'));
                 const newFileHandle = await FileSystem.getFileHandleFromPath(rootDirectoryHandle, parameters.new_path);
-                await Editor.openFile(newFileHandle, parameters.new_path, document.getElementById('tab-bar'));
+                await Editor.openFile(newFileHandle, parameters.new_path, document.getElementById('tab-bar'), false);
+                document.getElementById('chat-input').focus();
             }
             return { message: `File '${parameters.old_path}' renamed to '${parameters.new_path}' successfully.` };
         }
@@ -214,7 +217,8 @@ async function executeTool(toolCall, rootDirectoryHandle) {
                 const fileData = Editor.getOpenFiles().get(parameters.filename);
                 if (fileData) fileData.model.setValue(parameters.content);
             }
-            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'));
+            await Editor.openFile(fileHandle, parameters.filename, document.getElementById('tab-bar'), false);
+            document.getElementById('chat-input').focus();
             return { message: `File '${parameters.filename}' rewritten successfully.` };
         }
         case 'format_code': {

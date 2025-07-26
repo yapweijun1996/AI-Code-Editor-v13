@@ -100,9 +100,9 @@ export function initializeEditor(editorContainer, tabBarContainer) {
     });
 }
 
-export async function openFile(fileHandle, filePath, tabBarContainer) {
+export async function openFile(fileHandle, filePath, tabBarContainer, focusEditor = true) {
     if (openFiles.has(filePath)) {
-        await switchTab(filePath, tabBarContainer);
+        await switchTab(filePath, tabBarContainer, focusEditor);
         return;
     }
 
@@ -120,13 +120,13 @@ export async function openFile(fileHandle, filePath, tabBarContainer) {
             viewState: null,
         });
 
-        await switchTab(filePath, tabBarContainer);
+        await switchTab(filePath, tabBarContainer, focusEditor);
     } catch (error) {
         console.error(`Failed to open file ${filePath}:`, error);
     }
 }
 
-export async function switchTab(filePath, tabBarContainer) {
+export async function switchTab(filePath, tabBarContainer, focusEditor = true) {
     if (activeFilePath && openFiles.has(activeFilePath)) {
         openFiles.get(activeFilePath).viewState = editor.saveViewState();
     }
@@ -138,10 +138,12 @@ export async function switchTab(filePath, tabBarContainer) {
     if (fileData.viewState) {
         editor.restoreViewState(fileData.viewState);
     }
-    editor.focus();
+    if (focusEditor) {
+        editor.focus();
+    }
     editor.updateOptions({ readOnly: false });
     
-    const onTabClick = (fp) => switchTab(fp, tabBarContainer);
+    const onTabClick = (fp) => switchTab(fp, tabBarContainer, true); // User clicks always focus
     const onTabClose = (fp) => closeTab(fp, tabBarContainer);
     renderTabs(tabBarContainer, onTabClick, onTabClose);
 }
@@ -277,11 +279,11 @@ export async function restoreEditorState(state, rootHandle, tabBarContainer) {
     }
 
     if (state.activeFile && openFiles.has(state.activeFile)) {
-        await switchTab(state.activeFile, tabBarContainer);
+        await switchTab(state.activeFile, tabBarContainer, true);
     } else if (openFiles.size > 0) {
         // If active file is gone, open the first available one
         const firstFile = openFiles.keys().next().value;
-        await switchTab(firstFile, tabBarContainer);
+        await switchTab(firstFile, tabBarContainer, true);
     } else {
         // No files to restore, just render empty tabs
         renderTabs(tabBarContainer, () => {}, () => {});
