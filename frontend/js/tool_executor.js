@@ -39,7 +39,7 @@ async function executeTool(toolCall, rootDirectoryHandle) {
     switch (toolName) {
         case 'get_project_structure': {
             const tree = await FileSystem.buildStructureTree(rootDirectoryHandle);
-            const structure = `${tree.name}\n${FileSystem.formatTreeToString(tree)}`;
+            const structure = FileSystem.formatTreeToString(tree);
             return { structure: structure };
         }
         case 'read_file': {
