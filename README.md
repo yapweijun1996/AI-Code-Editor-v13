@@ -35,11 +35,19 @@ The editor's architecture has been streamlined to use a local Node.js server, si
 *   **Multimodal Input**: The AI chat supports both text and image uploads, allowing you to ask questions about visual content.
 *   **Multiple Agent Modes**: Switch between different AI modes (`Code`, `Plan`, `Search`) to tailor the agent's behavior to your specific needs.
 *   **Persistent Model Selection**: The application remembers your chosen AI model across sessions, saving you from having to re-select it on every visit.
-*   **Customizable AI Behavior**: Define custom rules for each AI mode (`Code`, `Plan`). These rules are automatically injected into the AI's system prompt for every request, allowing you to fine-tune its behavior, enforce specific guidelines, or add reminders to its workflow.
+*   **Customizable AI Behavior**:
+    *   **Per-Mode Custom Rules**: Define unique sets of rules for each AI mode (`Code`, `Plan`). These rules are stored locally in your browser's IndexedDB.
+    *   **Dynamic System Prompt**: Your custom rules are automatically injected into the AI's system prompt, allowing you to precisely tailor its behavior, enforce coding standards, or provide specific instructions for its workflow.
+    *   **Immediate Application**: Rule changes are applied instantly to the next AI interaction.
+    *   **Visible In-Chat Rules**: The currently active custom rules are displayed directly within the chat interface, providing constant visibility into the AI's operational context.
 *   **Project-Wide Checkpoint System**:
     *   **Automatic Session Restore**: Your entire workspace—including all open files, their content, and the full chat history—is automatically saved to your browser's IndexedDB. This state is seamlessly restored when you reload the page.
     *   **Manual & Automatic Snapshots**: Create manual, named checkpoints of your entire workspace at any time. The system also automatically creates a timestamped checkpoint before the AI performs any file modification, ensuring you can always revert to a safe state.
     *   **Full Workspace Restoration**: Restore the entire project to a previous state from the Checkpoints manager. This action reverts all files to their snapshotted content and re-opens the exact set of files that were active at that time.
+*   **Key Bug Fixes & Stability Improvements**:
+    *   **API Stability**: Resolved a critical bug that caused an API error when the AI responded after a tool call, ensuring a stable and reliable chat experience.
+    *   **File Path Correction**: Fixed an issue where the `get_project_structure` tool generated incorrect, nested file paths, improving the reliability of file operations.
+    *   **Session Handling**: Addressed a bug where a restored project folder from a previous session was not correctly recognized by the AI's tools.
 
 ---
 

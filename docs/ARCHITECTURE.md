@@ -85,17 +85,12 @@ sequenceDiagram
         FE->>FS: Reads file content
         FS-->>FE: Returns file content
         FE-->>AI: Sends file content as tool response
-    else Backend Tool Execution (e.g., run_terminal_command)
-        AI-->>FE: Requests tool call: run_terminal_command('ls -l')
-        FE->>BE: POST /api/execute-tool with command
-        BE->>BE: Spawns process with node-pty
-        BE-->>FE: Returns command output (JSON)
-        FE-->>AI: Sends command output as tool response
     end
 
     AI->>AI: Processes tool result and formulates answer
     AI-->>FE: Streams final text response to user
     FE->>User: Displays formatted AI response in chat
+    FE->>FE: Opens 'app.js' in Monaco Editor
 ```
 
 ## State Management
@@ -111,6 +106,14 @@ The application's state is persisted entirely within the browser's **IndexedDB**
 *   **`customRules`**: Stores user-defined rules for each AI mode, allowing for persistent, fine-grained control over the AI's behavior.
 
 This comprehensive state management ensures that both the user's configuration and their work-in-progress are preserved across sessions.
+
+## System Stability and Error Handling
+
+The architecture includes several mechanisms to ensure stability and provide a reliable user experience:
+
+*   **API-Compliant Payloads**: The communication with the Gemini API is carefully structured to adhere to its strict requirements. For instance, `functionResponse` parts are sent in dedicated messages, separate from any other content, preventing API errors and ensuring the tool-calling loop remains stable.
+*   **Robust Session Restoration**: The session and file handle management has been hardened to correctly restore the project context, even after a page reload, ensuring that AI tools have immediate and correct access to the file system.
+*   **Accurate File Path Generation**: The logic for generating the project's file structure has been corrected to prevent erroneous paths, ensuring that all file-based tool calls (`create_file`, `delete_file`, etc.) operate reliably.
 
 ## Custom Rule Injection Workflow
 
