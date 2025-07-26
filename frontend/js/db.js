@@ -10,11 +10,12 @@ export const DbManager = {
         sessionState: 'sessionState',
         checkpoints: 'checkpoints',
         settings: 'settings',
+        customRules: 'customRules',
     },
     async openDb() {
         return new Promise((resolve, reject) => {
             if (this.db) return resolve(this.db);
-            const request = indexedDB.open(this.dbName, 7);
+            const request = indexedDB.open(this.dbName, 8);
             request.onerror = () => reject('Error opening IndexedDB.');
             request.onsuccess = (event) => {
                 this.db = event.target.result;
@@ -43,6 +44,9 @@ export const DbManager = {
                 );
                 if (!db.objectStoreNames.contains(this.stores.settings)) {
                     db.createObjectStore(this.stores.settings, { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains(this.stores.customRules)) {
+                    db.createObjectStore(this.stores.customRules, { keyPath: 'id' });
                 }
             };
         });
@@ -214,6 +218,29 @@ export const DbManager = {
             request.onerror = () => resolve(null);
             request.onsuccess = () =>
                 resolve(request.result ? request.result.value : null);
+        });
+    },
+    async saveCustomRule(mode, rules) {
+        const db = await this.openDb();
+        return new Promise((resolve, reject) => {
+            const request = db
+                .transaction(this.stores.customRules, 'readwrite')
+                .objectStore(this.stores.customRules)
+                .put({ id: mode, rules: rules });
+            request.onerror = () => reject('Error saving custom rule.');
+            request.onsuccess = () => resolve();
+        });
+    },
+    async getCustomRule(mode) {
+        const db = await this.openDb();
+        return new Promise((resolve) => {
+            const request = db
+                .transaction(this.stores.customRules, 'readonly')
+                .objectStore(this.stores.customRules)
+                .get(mode);
+            request.onerror = () => resolve(null);
+            request.onsuccess = () =>
+                resolve(request.result ? request.result.rules : null);
         });
     },
 };

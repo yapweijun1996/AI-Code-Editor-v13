@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeCheckpointsModalButton = checkpointsModal.querySelector('.close-button');
     const createCheckpointButton = document.getElementById('create-checkpoint-button');
     const modelSelector = document.getElementById('model-selector');
+    const customRulesButton = document.getElementById('custom-rules-button');
+    const customRulesModal = document.getElementById('custom-rules-modal');
+    const closeCustomRulesModalButton = customRulesModal.querySelector('.close-button');
+    const customRulesTextarea = document.getElementById('custom-rules-textarea');
+    const saveCustomRulesButton = document.getElementById('save-custom-rules-button');
+    const customRulesModeName = document.getElementById('custom-rules-mode-name');
 
     // --- State ---
     let rootDirectoryHandle = null;
@@ -64,6 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if ((await savedHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
             rootDirectoryHandle = savedHandle;
+            GeminiChat.rootDirectoryHandle = rootDirectoryHandle; // <-- FIX: Pass handle to chat module
             await UI.refreshFileTree(rootDirectoryHandle, onFileSelect);
 
             const savedState = await DbManager.getSessionState();
@@ -215,6 +222,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target == checkpointsModal) {
             checkpointsModal.style.display = 'none';
         }
+        if (event.target == customRulesModal) {
+            customRulesModal.style.display = 'none';
+        }
     });
 
     viewCheckpointsButton.addEventListener('click', async () => {
@@ -275,6 +285,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 UI.renderCheckpoints(checkpointsList, checkpoints);
             }
         }
+    });
+
+    customRulesButton.addEventListener('click', async () => {
+        const agentModeSelector = document.getElementById('agent-mode-selector');
+        const selectedOption = agentModeSelector.options[agentModeSelector.selectedIndex];
+        const mode = selectedOption.value;
+        const modeName = selectedOption.text;
+
+        customRulesModeName.textContent = modeName;
+        const savedRules = await DbManager.getCustomRule(mode);
+        customRulesTextarea.value = savedRules || '';
+        customRulesModal.style.display = 'block';
+    });
+
+    closeCustomRulesModalButton.addEventListener('click', () => {
+        customRulesModal.style.display = 'none';
+    });
+
+    saveCustomRulesButton.addEventListener('click', async () => {
+        const agentModeSelector = document.getElementById('agent-mode-selector');
+        const mode = agentModeSelector.value;
+        await DbManager.saveCustomRule(mode, customRulesTextarea.value);
+        alert('Custom rules saved successfully.');
+        customRulesModal.style.display = 'none';
     });
 
     imageUploadButton.addEventListener('click', () => imageInput.click());

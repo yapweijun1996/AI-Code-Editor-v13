@@ -67,6 +67,7 @@
               </div>
               <button id="format-button">Format Document</button>
               <button id="view-checkpoints-button">Checkpoints</button>
+              <button id="custom-rules-button">Custom Rules</button>
               <button id="toggle-files-button">Toggle Files</button>
             </div>
           </div>
@@ -125,6 +126,16 @@
         <h2>Project Checkpoints</h2>
         <button id="create-checkpoint-button">Create New Checkpoint</button>
         <div id="checkpoints-list"></div>
+      </div>
+    </div>
+
+    <div id="custom-rules-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Custom Rules for <span id="custom-rules-mode-name"></span> Mode</h2>
+        <p>These rules will be added to the system prompt for the selected AI mode.</p>
+        <textarea id="custom-rules-textarea" placeholder="Enter custom rules here..."></textarea>
+        <button id="save-custom-rules-button">Save Rules</button>
       </div>
     </div>
 

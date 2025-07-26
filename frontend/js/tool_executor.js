@@ -16,7 +16,7 @@ async function executeTool(toolCall, rootDirectoryHandle) {
             'format_code', 'analyze_code', 'rename_file'
         ].includes(toolName)
     ) {
-        throw new Error("No project folder is open. Ask the user to open one.");
+        return { error: "No project folder is open. Please ask the user to open a folder before using this tool." };
     }
     // --- Automatic Checkpoint Interception ---
     if (['create_file', 'delete_file', 'rewrite_file', 'rename_file', 'create_folder', 'delete_folder', 'rename_folder'].includes(toolName)) {

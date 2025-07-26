@@ -156,6 +156,11 @@ export const GeminiChat = {
                 systemInstructionText = baseCodePrompt;
             }
 
+            const customRule = await DbManager.getCustomRule(mode);
+            if (customRule) {
+                systemInstructionText += `\n\n# USER-DEFINED RULES\n${customRule}`;
+            }
+
             const model = genAI.getGenerativeModel({
                 model: modelName,
                 systemInstruction: { parts: [{ text: systemInstructionText }] },
@@ -190,12 +195,9 @@ export const GeminiChat = {
 
 
     async sendMessage(chatInput, chatMessages, chatSendButton, chatCancelButton, thinkingIndicator, uploadedImage, clearImagePreview) {
-        const selectedModel = document.getElementById('model-selector').value;
-        const selectedMode = document.getElementById('agent-mode-selector').value;
-        if (!this.chatSession || this.activeModelName !== selectedModel || this.activeMode !== selectedMode) {
-            let historyToPreserve = this.chatSession ? await this.chatSession.getHistory() : [];
-            await this._restartSessionWithHistory(historyToPreserve);
-        }
+        // Always restart the chat session to ensure the latest custom rules are applied.
+        const historyToPreserve = this.chatSession ? await this.chatSession.getHistory() : [];
+        await this._restartSessionWithHistory(historyToPreserve);
 
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
