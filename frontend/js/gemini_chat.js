@@ -189,7 +189,40 @@ export const GeminiChat = {
 
     async _restartSessionWithHistory(history = []) {
         console.log('Restarting session with history preservation...');
+        
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = ''; // Clear the chat window first
+
         await this._startChat(history);
+
+        const mode = document.getElementById('agent-mode-selector').value;
+        const modeName = document.getElementById('agent-mode-selector').options[document.getElementById('agent-mode-selector').selectedIndex].text;
+        
+        const defaultRules = {
+            code: `
+- Always write clean, modular, and well-documented code.
+- Follow the existing coding style and conventions of the project.
+- When modifying a file, first read it carefully to understand the context.
+- Provide clear explanations for any code changes you make.
+- When you create a file, make sure it is placed in the correct directory.
+            `.trim(),
+            plan: `
+- Always start by creating a clear, step-by-step research plan.
+- Cite all sources and provide links in a 'References' section.
+- Synthesize information from multiple sources to provide a comprehensive answer.
+- Present findings in a structured format, using headings, lists, and Mermaid diagrams where appropriate.
+- Distinguish between facts from sources and your own analysis.
+            `.trim(),
+        };
+
+        let rules = await DbManager.getCustomRule(mode);
+        if (rules === null) {
+            rules = defaultRules[mode] || '';
+        }
+        
+        UI.displayRules(chatMessages, rules, modeName);
+        UI.renderChatHistory(chatMessages, history);
+        
         console.log(`Session re-initialized with ${history.length} history parts.`);
     },
 

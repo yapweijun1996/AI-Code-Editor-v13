@@ -235,3 +235,20 @@ export function updateTokenDisplay(requestTokens, responseTokens) {
         display.style.display = 'flex';
     }
 }
+
+export function displayRules(chatMessagesContainer, rules, modeName) {
+    const rulesDiv = document.createElement('div');
+    rulesDiv.className = 'chat-message system-rules';
+    
+    const title = document.createElement('h4');
+    title.textContent = `Active Rules for ${modeName} Mode`;
+    
+    const rulesContent = document.createElement('pre');
+    rulesContent.textContent = rules;
+    
+    rulesDiv.appendChild(title);
+    rulesDiv.appendChild(rulesContent);
+    
+    chatMessagesContainer.appendChild(rulesDiv);
+    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+}
