@@ -35,6 +35,7 @@ The editor's architecture has been streamlined to use a local Node.js server, si
 *   **Multimodal Input**: The AI chat supports both text and image uploads, allowing you to ask questions about visual content.
 *   **Multiple Agent Modes**: Switch between different AI modes (`Code`, `Plan`, `Search`) to tailor the agent's behavior to your specific needs.
 *   **Persistent Model Selection**: The application remembers your chosen AI model across sessions, saving you from having to re-select it on every visit.
+*   **Customizable AI Behavior**: Define custom rules for each AI mode (`Code`, `Plan`). These rules are automatically injected into the AI's system prompt for every request, allowing you to fine-tune its behavior, enforce specific guidelines, or add reminders to its workflow.
 *   **Project-Wide Checkpoint System**:
     *   **Automatic Session Restore**: Your entire workspace—including all open files, their content, and the full chat history—is automatically saved to your browser's IndexedDB. This state is seamlessly restored when you reload the page.
     *   **Manual & Automatic Snapshots**: Create manual, named checkpoints of your entire workspace at any time. The system also automatically creates a timestamped checkpoint before the AI performs any file modification, ensuring you can always revert to a safe state.

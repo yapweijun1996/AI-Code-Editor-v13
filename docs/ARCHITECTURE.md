@@ -108,5 +108,31 @@ The application's state is persisted entirely within the browser's **IndexedDB**
 *   **`checkpoints`**: Stores complete, project-wide snapshots. Before the AI executes a destructive operation (like `rewrite_file` or `create_file`), it saves the entire state of the editor (all open files, their content, and view states) as a single checkpoint. This allows for a full, commit-style restore of the workspace to a previous point in time.
 *   **`codeIndex`**: Caches a searchable index of the codebase for performance.
 *   **`settings`**: Stores miscellaneous user preferences, such as the last selected AI model.
+*   **`customRules`**: Stores user-defined rules for each AI mode, allowing for persistent, fine-grained control over the AI's behavior.
 
 This comprehensive state management ensures that both the user's configuration and their work-in-progress are preserved across sessions.
+
+## Custom Rule Injection Workflow
+
+To ensure the AI's behavior can be tailored by the user, custom rules are dynamically injected into the system prompt before every request. This process guarantees that the AI always operates with the most up-to-date instructions for the selected mode.
+
+```mermaid
+graph TD
+    A[User sends a message] --> B{Select AI Mode};
+    B -- Code Mode --> C[Get Base Prompt for Code];
+    B -- Plan Mode --> D[Get Base Prompt for Plan];
+    
+    subgraph "Rule Injection"
+        E[Get Custom Rules for Selected Mode from DB]
+    end
+
+    C --> F[Combine Base Prompt + Custom Rules];
+    D --> F;
+    E --> F;
+    
+    F --> G[Send Combined Instruction to Gemini AI];
+    G --> H[AI generates response based on all rules];
+    H --> I[Display final response to user];
+
+    style E fill:#d4edda,stroke:#155724,stroke-width:2px
+```
