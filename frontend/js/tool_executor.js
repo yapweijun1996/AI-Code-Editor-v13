@@ -13,13 +13,13 @@ async function executeTool(toolCall, rootDirectoryHandle) {
             'create_file', 'read_file', 'search_code', 'get_project_structure',
             'delete_file', 'build_or_update_codebase_index', 'query_codebase',
             'create_folder', 'delete_folder', 'rename_folder', 'rewrite_file',
-            'format_code', 'analyze_code', 'rename_file'
+            'format_code', 'analyze_code', 'rename_file', 'insert_content'
         ].includes(toolName)
     ) {
         return { error: "No project folder is open. Please ask the user to open a folder before using this tool." };
     }
     // --- Automatic Checkpoint Interception ---
-    if (['create_file', 'delete_file', 'rewrite_file', 'rename_file', 'create_folder', 'delete_folder', 'rename_folder'].includes(toolName)) {
+    if (['create_file', 'delete_file', 'rewrite_file', 'rename_file', 'create_folder', 'delete_folder', 'rename_folder', 'insert_content'].includes(toolName)) {
         try {
             const editorState = Editor.getEditorState();
             if (editorState.openFiles.length > 0) {
@@ -246,6 +246,33 @@ async function executeTool(toolCall, rootDirectoryHandle) {
             });
             return { analysis: analysis };
         }
+       case 'insert_content': {
+           const { filename, line_number, content } = parameters;
+           const fileHandle = await FileSystem.getFileHandleFromPath(rootDirectoryHandle, filename);
+           const file = await fileHandle.getFile();
+           const originalContent = await file.text();
+           const lines = originalContent.split('\\n');
+           
+           // Line numbers are 1-based for the model, convert to 0-based for array
+           const insertionPoint = Math.max(0, line_number - 1);
+           lines.splice(insertionPoint, 0, content);
+           
+           const newContent = lines.join('\\n');
+           
+           const writable = await fileHandle.createWritable();
+           await writable.write(newContent);
+           await writable.close();
+           
+           if (Editor.getOpenFiles().has(filename)) {
+               const fileData = Editor.getOpenFiles().get(filename);
+               if (fileData) fileData.model.setValue(newContent);
+           }
+           
+           await Editor.openFile(fileHandle, filename, document.getElementById('tab-bar'), false);
+           document.getElementById('chat-input').focus();
+           
+           return { message: `Content inserted into '${filename}' at line ${line_number}.` };
+       }
         default:
             throw new Error(`Unknown tool '${toolName}'.`);
     }
@@ -270,6 +297,22 @@ export async function execute(toolCall, rootDirectoryHandle) {
         const errorMessage = `Error executing tool '${toolName}': ${error.message}`;
         resultForModel = { error: errorMessage };
         console.error(errorMessage, error);
+    }
+    
+    // --- Automatic Error Checking ---
+    if (isSuccess && ['rewrite_file', 'insert_content', 'replace_selected_text'].includes(toolName)) {
+        const filePath = parameters.filename || Editor.getActiveFilePath();
+        if (filePath) {
+            // Give the editor a moment to process the changes
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const markers = Editor.getModelMarkers(filePath);
+            const errors = markers.filter(m => m.severity === monaco.MarkerSeverity.Error);
+
+            if (errors.length > 0) {
+                const errorMessages = errors.map(e => `L${e.startLineNumber}: ${e.message}`).join('\\n');
+                resultForModel.message = (resultForModel.message || '') + `\\n\\n**Warning**: The file was modified, but syntax errors were detected:\\n${errorMessages}`;
+            }
+        }
     }
 
     const resultForLog = isSuccess ? { status: 'Success', ...resultForModel } : { status: 'Error', message: resultForModel.error };

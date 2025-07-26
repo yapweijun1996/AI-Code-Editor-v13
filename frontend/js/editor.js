@@ -304,3 +304,11 @@ export async function restoreCheckpointState(state, rootHandle, tabBarContainer)
     // Restore files from the checkpoint state
     await restoreEditorState(state, rootHandle, tabBarContainer);
 }
+
+export function getModelMarkers(filePath) {
+    const fileData = openFiles.get(filePath);
+    if (!fileData || !fileData.model) {
+        return [];
+    }
+    return monaco.editor.getModelMarkers({ owner: 'default', resource: fileData.model.uri });
+}
