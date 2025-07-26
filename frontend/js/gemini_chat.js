@@ -21,11 +21,15 @@ export const GeminiChat = {
         this.rootDirectoryHandle = rootDirectoryHandle;
 
         const savedModel = await DbManager.getSetting('selectedModel');
-        if (savedModel) {
-            const modelSelector = document.getElementById('model-selector');
-            if (modelSelector) {
-                modelSelector.value = savedModel;
-            }
+        const modelSelector = document.getElementById('model-selector');
+        if (savedModel && modelSelector) {
+            modelSelector.value = savedModel;
+        }
+
+        const savedMode = await DbManager.getSetting('selectedMode');
+        const modeSelector = document.getElementById('agent-mode-selector');
+        if (savedMode && modeSelector) {
+            modeSelector.value = savedMode;
         }
     },
 
@@ -41,6 +45,7 @@ export const GeminiChat = {
             const mode = document.getElementById('agent-mode-selector').value;
 
             await DbManager.saveSetting('selectedModel', modelName);
+            await DbManager.saveSetting('selectedMode', mode);
 
             const baseTools = {
                 functionDeclarations: [

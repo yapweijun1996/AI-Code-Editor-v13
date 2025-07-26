@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if ((await savedHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
             rootDirectoryHandle = savedHandle;
             await UI.refreshFileTree(rootDirectoryHandle, onFileSelect);
-            await GeminiChat.initialize(rootDirectoryHandle);
 
             const savedState = await DbManager.getSessionState();
             if (savedState) {
@@ -92,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await ApiKeyManager.loadKeys(apiKeysTextarea);
 
     // --- Restore session and initialize chat ---
+    await GeminiChat.initialize(); // Load saved model/mode settings
     await tryRestoreDirectory();
 
     // Start a new chat session if one wasn't restored
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             rootDirectoryHandle = await window.showDirectoryPicker();
             await DbManager.saveDirectoryHandle(rootDirectoryHandle);
             await UI.refreshFileTree(rootDirectoryHandle, onFileSelect);
-            await GeminiChat.initialize(rootDirectoryHandle);
+            GeminiChat.rootDirectoryHandle = rootDirectoryHandle; // Update the handle
         } catch (error) {
             console.error('Error opening directory:', error);
         }
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if ((await savedHandle.requestPermission({ mode: 'readwrite' })) === 'granted') {
                     rootDirectoryHandle = savedHandle;
                     await UI.refreshFileTree(rootDirectoryHandle, onFileSelect);
-                    await GeminiChat.initialize(rootDirectoryHandle);
+                    GeminiChat.rootDirectoryHandle = rootDirectoryHandle; // Update the handle
                 } else {
                     alert('Permission to access the folder was denied.');
                 }
